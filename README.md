@@ -1,4 +1,4 @@
-# SocketChat
+# KafChat
 
 A lightweight real‑time group chat built with Spring Boot, WebSockets (STOMP over SockJS), and MySQL. I built this to explore simple realtime messaging with a clean, minimal stack and a single static front‑end page.
 
