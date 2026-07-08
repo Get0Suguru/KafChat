@@ -1,25 +1,26 @@
-package com.suguru.geto.socket.chat.model;
+package com.suguru.geto.Kaf.chat.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Document(collection = "chat_messages")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private Long id;
+    private String id;
 
     @NonNull
     private String sender;
@@ -29,13 +30,11 @@ public class ChatMessage {
 
     private LocalDateTime sentAt;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
+    @DBRef
     @JsonIgnore
     private ChatGroup group;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @DBRef
     @JsonIgnore
     private User user;
 }

@@ -1,7 +1,7 @@
-package com.suguru.geto.socket.chat.controller;
+package com.suguru.geto.Kaf.chat.controller;
 
-import com.suguru.geto.socket.chat.payload.UserRequest;
-import com.suguru.geto.socket.chat.service.ChatService;
+import com.suguru.geto.Kaf.chat.payload.UserRequest;
+import com.suguru.geto.Kaf.chat.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

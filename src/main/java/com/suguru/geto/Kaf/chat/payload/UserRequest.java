@@ -1,4 +1,4 @@
-package com.suguru.geto.socket.chat.payload;
+package com.suguru.geto.Kaf.chat.payload;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,14 +1,13 @@
-package com.suguru.geto.socket.chat.service;
+package com.suguru.geto.Kaf.chat.service;
 
-import com.suguru.geto.socket.chat.model.ChatGroup;
-import com.suguru.geto.socket.chat.model.ChatMessage;
-import com.suguru.geto.socket.chat.model.User;
-import com.suguru.geto.socket.chat.payload.ChatMessageDto;
-import com.suguru.geto.socket.chat.repository.ChatGroupRepo;
-import com.suguru.geto.socket.chat.repository.ChatMessageRepo;
-import com.suguru.geto.socket.chat.repository.UserRepo;
+import com.suguru.geto.Kaf.chat.model.ChatGroup;
+import com.suguru.geto.Kaf.chat.model.ChatMessage;
+import com.suguru.geto.Kaf.chat.model.User;
+import com.suguru.geto.Kaf.chat.payload.ChatMessageDto;
+import com.suguru.geto.Kaf.chat.repository.ChatGroupRepo;
+import com.suguru.geto.Kaf.chat.repository.ChatMessageRepo;
+import com.suguru.geto.Kaf.chat.repository.UserRepo;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -62,7 +61,7 @@ public class ChatService {
             return "wrong";
         }
     }
-    @Transactional
+
     public ChatGroup findOrCreateGroup(String groupName) {
         ChatGroup group = groupRepository.findByName(groupName);
 

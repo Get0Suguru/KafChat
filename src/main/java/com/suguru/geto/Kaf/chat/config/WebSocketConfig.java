@@ -1,4 +1,4 @@
-package com.suguru.geto.socket.chat.config;
+package com.suguru.geto.Kaf.chat.config;
 
 
 import org.springframework.context.annotation.Configuration;

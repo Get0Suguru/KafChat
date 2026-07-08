@@ -1,11 +1,11 @@
-package com.suguru.geto.socket.chat.controller;
+package com.suguru.geto.Kaf.chat.controller;
 
-import com.suguru.geto.socket.chat.model.ChatGroup;
-import com.suguru.geto.socket.chat.model.ChatMessage;
-import com.suguru.geto.socket.chat.payload.ChatMessageDto;
-import com.suguru.geto.socket.chat.repository.ChatGroupRepo;
-import com.suguru.geto.socket.chat.repository.ChatMessageRepo;
-import com.suguru.geto.socket.chat.service.ChatService;
+import com.suguru.geto.Kaf.chat.model.ChatGroup;
+import com.suguru.geto.Kaf.chat.model.ChatMessage;
+import com.suguru.geto.Kaf.chat.payload.ChatMessageDto;
+import com.suguru.geto.Kaf.chat.repository.ChatGroupRepo;
+import com.suguru.geto.Kaf.chat.repository.ChatMessageRepo;
+import com.suguru.geto.Kaf.chat.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;

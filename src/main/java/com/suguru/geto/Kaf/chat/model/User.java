@@ -1,28 +1,25 @@
-package com.suguru.geto.socket.chat.model;
+package com.suguru.geto.Kaf.chat.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashSet;
-import java.util.Set;
-
-@Entity
+@Document(collection = "users")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
 public class User {
 
 
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+        private String id;
 
-        @Column(unique = true)
+        @Indexed(unique = true)
         private String username;
 
         @NonNull
