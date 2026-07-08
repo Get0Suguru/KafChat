@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDateTime;
 
@@ -30,11 +31,11 @@ public class ChatMessage {
 
     private LocalDateTime sentAt;
 
-    @DBRef
+    @DocumentReference(collection = "chat_groups")
     @JsonIgnore
     private ChatGroup group;
 
-    @DBRef
+    @DocumentReference(collection = "users")
     @JsonIgnore
     private User user;
 }

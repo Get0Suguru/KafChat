@@ -24,6 +24,13 @@ A lightweight real‑time group chat built with Spring Boot, WebSockets (STOMP o
 - Single static page UI with neon-ish theme.
 
 ---
+## Latest Additions
+
+1. MongoDB Transition -> also we are just using mongo for permanent storage of messages and data
+2. all the retrival will be from kafka events -> due to sequential, fast, persistence of events
+
+
+---
 
 ## Tech stack
 
