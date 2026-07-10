@@ -26,7 +26,7 @@ public class ChatGroup {
     @NonNull
     private String name;
 
-    @DocumentReference(collection = "users")
+    @DocumentReference(collection = "users", lazy = true)
     private List<User> users;
 
 }

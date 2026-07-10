@@ -31,11 +31,11 @@ public class ChatMessage {
 
     private LocalDateTime sentAt;
 
-    @DocumentReference(collection = "chat_groups")
+    @DocumentReference(collection = "chat_groups", lazy = true)
     @JsonIgnore
     private ChatGroup group;
 
-    @DocumentReference(collection = "users")
+    @DocumentReference(collection = "users", lazy = true)
     @JsonIgnore
     private User user;
 }
