@@ -25,7 +25,7 @@ public class ChatService {
         this.groupRepository = groupRepository;
     }
 
-//     saving msg in db
+// todo 3  -> deal with messages || sent in group
     public ChatMessage saveMessage(ChatMessageDto messageDto) {
         ChatGroup group = groupRepository.findByName(messageDto.getGroupName());
         if (group == null) {
@@ -45,6 +45,8 @@ public class ChatService {
         return message;
     }
 
+    // lets deal in step by step
+    // #todo 1     deal with user
     public String findOrCreateUser(String username, String password) { // Updated to include password
         User user = userRepository.findByUsername(username);
 
@@ -61,6 +63,9 @@ public class ChatService {
             return "wrong";
         }
     }
+
+    // todo 2  -> deal with group    ||   to chat they have to be in group
+
 
     public ChatGroup findOrCreateGroup(String groupName) {
         ChatGroup group = groupRepository.findByName(groupName);

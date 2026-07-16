@@ -6,6 +6,7 @@ import com.suguru.geto.Kaf.chat.payload.ChatMessageDto;
 import com.suguru.geto.Kaf.chat.repository.ChatGroupRepo;
 import com.suguru.geto.Kaf.chat.repository.ChatMessageRepo;
 import com.suguru.geto.Kaf.chat.service.ChatService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 @Controller
+@Slf4j
 public class ChatController {
 
     @Autowired
@@ -32,9 +34,17 @@ public class ChatController {
 
     @MessageMapping("/chat.joinGroup")
     public void joinGroup(@Payload String groupName, @Header("simpSessionId") String sessionId) {
+
+        log.info("join group hit. group name={}, sessionId={}", groupName, sessionId);
+
         ChatGroup group = chatService.findOrCreateGroup(groupName); // Create group here
+        log.info("found/created group with name {}", group.getName());
+
         // No response needed since this is just to ensure group creation
         List<ChatMessage> messages = chatMessageRepo.findByGroup(chatGroupRepo.findByName(groupName));
+        log.info("prev history of msgs || count = {}", messages.size());
+
+        // converting to client friendly pojo & json object
         for (ChatMessage message : messages) {
             ChatMessageDto messageDto = new ChatMessageDto();
             messageDto.setContent(message.getContent());
@@ -54,6 +64,7 @@ public class ChatController {
 
         ChatMessage message = chatService.saveMessage(messageDto);
         messageDto.setSentAt(message.getSentAt());
+        log.debug("sending in group u subbed to || destination = {}", "/topic/group/" + messageDto.getGroupName());
         // to send message
         messagingTemplate.convertAndSend("/topic/group/" + messageDto.getGroupName(), messageDto);
 
