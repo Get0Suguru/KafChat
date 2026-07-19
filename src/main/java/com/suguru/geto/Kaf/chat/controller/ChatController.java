@@ -33,8 +33,27 @@ public class ChatController {
 
 
     @MessageMapping("/chat.joinGroup")
-    public void joinGroup(@Payload String groupName) {
-        chatService.findOrCreateGroup(groupName);
+    public void joinGroup(@Payload String groupName, @Header("simpSessionId") String sessionId) {
+
+        log.error("join group hit. group name={}, sessionId={}", groupName, sessionId);
+
+        ChatGroup group = chatService.findOrCreateGroup(groupName); // Create group here
+        log.info("found/created group with name {}", group.getName());
+
+        // No response needed since this is just to ensure group creation
+        List<ChatMessage> messages = chatMessageRepo.findByGroup(chatGroupRepo.findByName(groupName));
+        log.info("prev history of msgs || count = {}", messages.size());
+
+        // converting to client friendly pojo & json object
+        for (ChatMessage message : messages) {
+            ChatMessageDto messageDto = new ChatMessageDto();
+            messageDto.setContent(message.getContent());
+            messageDto.setSender(message.getSender());
+            messageDto.setSentAt(message.getSentAt());
+            messageDto.setGroupName(message.getGroup().getName());
+
+            messagingTemplate.convertAndSendToUser(sessionId,"/queue/group/" + groupName, messageDto);
+        }
     }
 
 
@@ -42,12 +61,24 @@ public class ChatController {
     @MessageMapping("/chat.sendMessage")            // Websocket world -> post mapping
     public void sendMessage(@Payload ChatMessageDto messageDto) {
 
+        String targetUser = messageDto.getTargetUser();
 
-        ChatMessage message = chatService.saveMessage(messageDto);
-        messageDto.setSentAt(message.getSentAt());
-        log.debug("sending in group u subbed to || destination = {}", "/topic/group/" + messageDto.getGroupName());
-        // to send message
-        messagingTemplate.convertAndSend("/topic/group/" + messageDto.getGroupName(), messageDto);
+        if (targetUser != null && !targetUser.isBlank()) {
+            // Ephemeral by design: never touches the DB. If nobody's listening
+            // right now, it's gone — same guarantee as the broker itself has
+            // no memory of undelivered messages. No history endpoint, no
+            // group fetch, nothing will ever surface this later.
+            messageDto.setSentAt(java.time.LocalDateTime.now());
 
+            String destination = "/queue/group/" + messageDto.getGroupName();
+            log.debug("targeted send (not persisted) || user={}, destination={}", targetUser, destination);
+            messagingTemplate.convertAndSendToUser(targetUser, destination, messageDto);
+            messagingTemplate.convertAndSendToUser(messageDto.getSender(), destination, messageDto); // echo to sender
+        } else {
+            ChatMessage message = chatService.saveMessage(messageDto);
+            messageDto.setSentAt(message.getSentAt());
+            log.debug("broadcasting to group || destination = {}", "/topic/group/" + messageDto.getGroupName());
+            messagingTemplate.convertAndSend("/topic/group/" + messageDto.getGroupName(), messageDto);
+        }
     }
 }

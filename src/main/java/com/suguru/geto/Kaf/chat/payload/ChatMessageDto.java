@@ -20,4 +20,8 @@ public class ChatMessageDto {
     private String groupName;
 
     private LocalDateTime sentAt;
+
+    // Set only for a targeted mention (e.g. "/*kabadi* message").
+    // Null/blank means a normal broadcast message.
+    private String targetUser;
 }

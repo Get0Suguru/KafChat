@@ -169,7 +169,7 @@
     }
 
     function startWebSocket() {
-        const socket = new WebSocket('ws://' + window.location.host + '/stomp');
+        const socket = new WebSocket('ws://' + window.location.host + '/stomp?username=' + encodeURIComponent(username));
         stompClient = Stomp.over(socket);
         stompClient.connect({}, () => {
             document.getElementById('username').disabled = true;
@@ -198,6 +198,15 @@
             renderMessage(JSON.parse(message.body));
         });
 
+        // Private channel for mentions targeted at you specifically.
+        // Safe to subscribe without the receipt dance from before, since
+        // mentions arrive later (someone has to type one) rather than the
+        // instant after subscribing, so there's no race to lose here.
+        stompClient.subscribe('/user/queue/group/' + groupName, (message) => {
+            const msg = JSON.parse(message.body);
+            renderMessage(msg, true);
+        });
+
         // Now only ensures the group exists server-side; no longer pushes history
         stompClient.send('/app/chat.joinGroup', {}, groupName);
 
@@ -209,12 +218,13 @@
         document.getElementById('groupName').value = '';
     }
 
-    function renderMessage(msg) {
+    function renderMessage(msg, isPrivate) {
         const messages = document.getElementById('messages');
         const formattedTime = msg.sentAt ? new Date(msg.sentAt).toLocaleString() : 'No time';
+        const tag = isPrivate ? '<span style="color:#ff9d00;font-weight:bold;">[private] </span>' : '';
         messages.innerHTML += `
     <div class="message">
-        <span class="message-sender">${msg.sender}</span>:
+        ${tag}<span class="message-sender">${msg.sender}</span>:
         <span class="message-content">${msg.content}</span>
         <span class="message-timestamp">[${formattedTime}]</span>
     </div>`;
@@ -222,13 +232,18 @@
     }
 
     function sendMessage() {
-        const content = document.getElementById('message').value;
+        const raw = document.getElementById('message').value;
         const groupName = document.getElementById('groupSelect').value;
-        if (!content || !groupName) return alert('Select a group and type a message!');
+        if (!raw || !groupName) return alert('Select a group and type a message!');
+
+        // Mention syntax: /*username* rest of the message
+        const mention = raw.match(/^\/\*(\S+)\*\s*(.*)$/);
+
         const message = {
-            content: content,
+            content: mention ? mention[2] : raw,
             sender: username,
-            groupName: groupName
+            groupName: groupName,
+            targetUser: mention ? mention[1] : null
         };
         stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
         document.getElementById('message').value = '';
