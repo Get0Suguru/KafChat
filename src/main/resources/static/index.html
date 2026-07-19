@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <title>KafChat</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -170,7 +169,7 @@
     }
 
     function startWebSocket() {
-        const socket = new SockJS('/stomp');
+        const socket = new WebSocket('ws://' + window.location.host + '/stomp');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, () => {
             document.getElementById('username').disabled = true;
@@ -182,40 +181,44 @@
     function joinGroup() {
         const groupName = document.getElementById('groupName').value;
         if (!groupName) return alert('Enter a group name!');
-        // Subscribe to private queue for previous messages
-        stompClient.subscribe('/user/queue/group/' + groupName, (message) => {
-            const msg = JSON.parse(message.body);
-            const messages = document.getElementById('messages');
-            const formattedTime = msg.sentAt ? new Date(msg.sentAt).toLocaleString() : 'No time';
-            messages.innerHTML += `
-            <div class="message">
-                <span class="message-sender">${msg.sender}</span>:
-                <span class="message-content">${msg.content}</span>
-                <span class="message-timestamp">[${formattedTime}]</span>
-            </div>`;
-            messages.scrollTop = messages.scrollHeight;
-        });
-        // Subscribe to public topic for new messages
+
+        // History is fetched over plain HTTP now — no /user destination,
+        // no receipt handshake, no ordering dependency on WebSocket frames.
+        // This was previously pushed via convertAndSendToUser + /user/queue,
+        // which required a receipt round-trip that this stomp.js version
+        // never actually completed (confirmed: no RECEIPT frame ever logged
+        // server-side, so the join SEND never fired at all).
+        fetch('/api/groups/' + encodeURIComponent(groupName) + '/messages')
+            .then(response => response.json())
+            .then(history => history.forEach(renderMessage))
+            .catch(err => console.error('Failed to load history for', groupName, err));
+
+        // Live broadcast still goes over /topic, unchanged
         stompClient.subscribe('/topic/group/' + groupName, (message) => {
-            const msg = JSON.parse(message.body);
-            const messages = document.getElementById('messages');
-            const formattedTime = msg.sentAt ? new Date(msg.sentAt).toLocaleString() : 'No time';
-            messages.innerHTML += `
-            <div class="message">
-                <span class="message-sender">${msg.sender}</span>:
-                <span class="message-content">${msg.content}</span>
-                <span class="message-timestamp">[${formattedTime}]</span>
-            </div>`;
-            messages.scrollTop = messages.scrollHeight;
+            renderMessage(JSON.parse(message.body));
         });
-        // Create group via WebSocket with JSON
+
+        // Now only ensures the group exists server-side; no longer pushes history
         stompClient.send('/app/chat.joinGroup', {}, groupName);
+
         const groupSelect = document.getElementById('groupSelect');
         const option = document.createElement('option');
         option.value = groupName;
         option.text = groupName;
         groupSelect.appendChild(option);
         document.getElementById('groupName').value = '';
+    }
+
+    function renderMessage(msg) {
+        const messages = document.getElementById('messages');
+        const formattedTime = msg.sentAt ? new Date(msg.sentAt).toLocaleString() : 'No time';
+        messages.innerHTML += `
+    <div class="message">
+        <span class="message-sender">${msg.sender}</span>:
+        <span class="message-content">${msg.content}</span>
+        <span class="message-timestamp">[${formattedTime}]</span>
+    </div>`;
+        messages.scrollTop = messages.scrollHeight;
     }
 
     function sendMessage() {

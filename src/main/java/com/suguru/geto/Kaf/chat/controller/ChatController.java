@@ -33,27 +33,8 @@ public class ChatController {
 
 
     @MessageMapping("/chat.joinGroup")
-    public void joinGroup(@Payload String groupName, @Header("simpSessionId") String sessionId) {
-
-        log.info("join group hit. group name={}, sessionId={}", groupName, sessionId);
-
-        ChatGroup group = chatService.findOrCreateGroup(groupName); // Create group here
-        log.info("found/created group with name {}", group.getName());
-
-        // No response needed since this is just to ensure group creation
-        List<ChatMessage> messages = chatMessageRepo.findByGroup(chatGroupRepo.findByName(groupName));
-        log.info("prev history of msgs || count = {}", messages.size());
-
-        // converting to client friendly pojo & json object
-        for (ChatMessage message : messages) {
-            ChatMessageDto messageDto = new ChatMessageDto();
-            messageDto.setContent(message.getContent());
-            messageDto.setSender(message.getSender());
-            messageDto.setSentAt(message.getSentAt());
-            messageDto.setGroupName(message.getGroup().getName());
-
-            messagingTemplate.convertAndSendToUser(sessionId,"/queue/group/" + groupName, messageDto);
-        }
+    public void joinGroup(@Payload String groupName) {
+        chatService.findOrCreateGroup(groupName);
     }
 
 
