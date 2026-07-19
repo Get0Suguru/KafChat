@@ -190,7 +190,7 @@
         // server-side, so the join SEND never fired at all).
         fetch('/api/groups/' + encodeURIComponent(groupName) + '/messages')
             .then(response => response.json())
-            .then(history => history.forEach(renderMessage))
+            .then(history => history.forEach(msg => renderMessage(msg)))
             .catch(err => console.error('Failed to load history for', groupName, err));
 
         // Live broadcast still goes over /topic, unchanged
