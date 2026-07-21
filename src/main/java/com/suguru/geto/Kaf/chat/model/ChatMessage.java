@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -38,4 +39,10 @@ public class ChatMessage {
     @DocumentReference(collection = "users", lazy = true)
     @JsonIgnore
     private User user;
+
+    @Indexed(unique = true, sparse = true)
+    private String messageId; // unique id for each message (to prevent kafka duplicates issue)
+//    setting a parameter like sparse = true (or sparse: true) typically tells a system to only index, store, or process
+//    items that actually contain data
+
 }

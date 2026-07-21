@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface ChatMessageRepo extends MongoRepository<ChatMessage, String> {
     List<ChatMessage> findByGroup(ChatGroup group);
+
+    boolean existsByMessageId(String messageId);
+    ChatMessage findByMessageId(String messageId);
 }

@@ -17,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @Slf4j
@@ -71,6 +72,10 @@ public class ChatController {
 
         String targetUser = messageDto.getTargetUser();
 
+        // todo x1 -> after kafka its a flaw -> its not over kafka (means only one instance will get it)
+
+        // todo x3 -> thats a great check how -> without kafka the instance change won't able to deliever private msg
+//        but in same instance  u can -> great 
         if (targetUser != null && !targetUser.isBlank()) {
             // Ephemeral by design: never touches the DB. If nobody's listening
             // right now, it's gone — same guarantee as the broker itself has
@@ -88,6 +93,9 @@ public class ChatController {
 //            log.debug("broadcasting to group || destination = {}", "/topic/group/" + messageDto.getGroupName());
 //            messagingTemplate.convertAndSend("/topic/group/" + messageDto.getGroupName(), messageDto);
             log.debug("publishing to kafka || topic={}, key={}", chatTopic, messageDto.getGroupName());
+
+            // producing to kafka topic
+            messageDto.setMessageId(UUID.randomUUID().toString());
             kafkaTemplate.send(chatTopic, messageDto.getGroupName(), messageDto);
             // we are replacing the above lines with kafkaTemplate.send(chatTopic, messageDto.getGroupName(), messageDto);
             // the msg now first go though kafka layer and front that it'll picked again to save anall that

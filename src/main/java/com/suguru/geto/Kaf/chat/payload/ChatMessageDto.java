@@ -1,9 +1,7 @@
 package com.suguru.geto.Kaf.chat.payload;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDateTime;
 
@@ -24,4 +22,6 @@ public class ChatMessageDto {
     // Set only for a targeted mention (e.g. "/*kabadi* message").
     // Null/blank means a normal broadcast message.
     private String targetUser;
+
+    private String messageId; // unique id for each message (to prevent kafka duplicates issue)
 }

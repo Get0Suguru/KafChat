@@ -28,8 +28,13 @@ public class ChatService {
 // todo 3  -> deal with messages || sent in group
     public ChatMessage saveMessage(ChatMessageDto messageDto) {
         ChatGroup group = groupRepository.findByName(messageDto.getGroupName());
+
         if (group == null) {
             throw new RuntimeException("Group not found with name: " + messageDto.getGroupName());
+        }
+        // early exit -> if message already exists (kafka's repeat message issue)
+        if (messageDto.getMessageId() != null && messageRepository.existsByMessageId(messageDto.getMessageId())) {
+            return messageRepository.findByMessageId(messageDto.getMessageId());
         }
 
         ChatMessage message = new ChatMessage();
@@ -38,7 +43,8 @@ public class ChatService {
         message.setGroup(group);
         message.setUser(userRepository.findByUsername(messageDto.getSender()));
         message.setContent(messageDto.getContent());
-        message.setSentAt(LocalDateTime.now());
+        message.setSentAt(messageDto.getSentAt());
+        message.setMessageId(messageDto.getMessageId());
 
         messageRepository.save(message);
 
