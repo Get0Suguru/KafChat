@@ -8,6 +8,8 @@ import com.suguru.geto.Kaf.chat.repository.ChatMessageRepo;
 import com.suguru.geto.Kaf.chat.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -30,6 +32,12 @@ public class ChatController {
     private ChatGroupRepo chatGroupRepo;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private KafkaTemplate<String, ChatMessageDto> kafkaTemplate;
+
+    @Value("${kafka.topic.chat-messages}")
+    private String chatTopic;
 
 
     @MessageMapping("/chat.joinGroup")
@@ -75,10 +83,17 @@ public class ChatController {
             messagingTemplate.convertAndSendToUser(targetUser, destination, messageDto);
             messagingTemplate.convertAndSendToUser(messageDto.getSender(), destination, messageDto); // echo to sender
         } else {
-            ChatMessage message = chatService.saveMessage(messageDto);
-            messageDto.setSentAt(message.getSentAt());
-            log.debug("broadcasting to group || destination = {}", "/topic/group/" + messageDto.getGroupName());
-            messagingTemplate.convertAndSend("/topic/group/" + messageDto.getGroupName(), messageDto);
+//            ChatMessage message = chatService.saveMessage(messageDto);
+//            messageDto.setSentAt(message.getSentAt());
+//            log.debug("broadcasting to group || destination = {}", "/topic/group/" + messageDto.getGroupName());
+//            messagingTemplate.convertAndSend("/topic/group/" + messageDto.getGroupName(), messageDto);
+            log.debug("publishing to kafka || topic={}, key={}", chatTopic, messageDto.getGroupName());
+            kafkaTemplate.send(chatTopic, messageDto.getGroupName(), messageDto);
+            // we are replacing the above lines with kafkaTemplate.send(chatTopic, messageDto.getGroupName(), messageDto);
+            // the msg now first go though kafka layer and front that it'll picked again to save anall that
+
+            // format of method is (topic, key, value)
+
         }
     }
 }
